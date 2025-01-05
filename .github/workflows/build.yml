@@ -1,0 +1,37 @@
+name: Build and Run Docker on Schedule
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 */3 * * *"  # 每 3 小時運行一次
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ssangyongsportsorg/chatwoot-sidekiq-koyeb
+          ref: main
+
+      - name: Build Docker image
+        run: docker build -t chatwoot-sidekiq .
+
+      - name: Run Docker container
+        run: |
+          docker run \
+            -e ACTIVE_STORAGE_SERVICE=${{ secrets.ACTIVE_STORAGE_SERVICE }} \
+            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -e DEFAULT_LOCALE=${{ secrets.DEFAULT_LOCALE }} \
+            -e ENABLE_ALPINE_PRIVATE_NETWORKING=${{ secrets.ENABLE_ALPINE_PRIVATE_NETWORKING }} \
+            -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+            -e INSTALLATION_ENV=${{ secrets.INSTALLATION_ENV }} \
+            -e NODE_ENV=${{ secrets.NODE_ENV }} \
+            -e RAILS_ENV=${{ secrets.RAILS_ENV }} \
+            -e REDIS_URL=${{ secrets.REDIS_URL }} \
+            -e SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }} \
+            chatwoot-sidekiq
